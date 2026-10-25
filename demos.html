@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-title-en="NeuroVision — Demo experiments" data-title-th="NeuroVision — การทดลองสาธิต">NeuroVision — Demo experiments</title>
+  <meta name="description" content="Draw digits, train logic gates and bend decision boundaries with real neural networks.">
+  <meta property="og:title" content="NeuroVision — Demo experiments">
+  <meta property="og:description" content="Three hands-on neural network experiments for the exhibition floor.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+</head>
+<body data-page="demos">
+  <div id="bg-host"></div>
+  <a href="#main" class="skip-link" data-i18n="skip">Skip to content</a>
+  <header id="topbar"></header>
+
+  <main id="main">
+    <div class="nv-page-in">
+      <section class="container page-section">
+        <div class="tech-badge" style="margin-bottom: 0.75rem;">
+          <span class="pulse-dot"></span>
+          <span>INTERACTIVE EXPERIMENTS · REAL-TIME INFERENCE</span>
+        </div>
+        <h1 class="h1 hero-glimmer" data-i18n="demosTitle">Three experiments</h1>
+        <p class="lead" data-i18n="demosIntro">Draw, train and break real neural networks, right here in the browser.</p>
+
+        <div class="demo-tabs" role="tablist" id="demo-tabs">
+          <button type="button" class="seg-btn" role="tab" id="tab-digits" aria-controls="panel-digits" data-i18n="tabDigits">Read handwriting</button>
+          <button type="button" class="seg-btn" role="tab" id="tab-gates" aria-controls="panel-gates" data-i18n="tabGates">One neuron vs many</button>
+          <button type="button" class="seg-btn" role="tab" id="tab-boundary" aria-controls="panel-boundary" data-i18n="tabBoundary">Bend the boundary</button>
+        </div>
+
+        <!-- 1. Digits -->
+        <div class="demo-panel" id="panel-digits" role="tabpanel" aria-labelledby="tab-digits" tabindex="-1">
+          <div class="demo-grid" id="digit-grid">
+            <div class="card-deep digit-card">
+              <h2 class="card-title" data-i18n="digitTitle">Handwritten digit recognition</h2>
+              <p class="demo-body" data-i18n="digitSub1"></p>
+              <div class="canvas-frame sq">
+                <canvas id="digit-canvas" class="digit-canvas" width="400" height="400" tabindex="0" role="img" data-i18n-aria="canvasLabel"></canvas>
+              </div>
+              <div class="tools">
+                <button type="button" class="pill-outline" id="digit-clear" data-i18n="clear">Clear</button>
+                <button type="button" class="pill-outline" id="digit-mirror" aria-pressed="false" data-i18n="mirror">Left / Right</button>
+              </div>
+
+              <!-- Quick Sample Digit Presets (Eliminates dead space - Photo 2) -->
+              <div class="digit-sample-tray">
+                <span class="sample-tray-title">QUICK SAMPLE DIGITS (CLICK TO TEST):</span>
+                <div class="digit-num-pad">
+                  <button type="button" class="num-key" data-digit="0">0</button>
+                  <button type="button" class="num-key" data-digit="1">1</button>
+                  <button type="button" class="num-key" data-digit="2">2</button>
+                  <button type="button" class="num-key" data-digit="3">3</button>
+                  <button type="button" class="num-key" data-digit="4">4</button>
+                  <button type="button" class="num-key" data-digit="5">5</button>
+                  <button type="button" class="num-key" data-digit="6">6</button>
+                  <button type="button" class="num-key" data-digit="7">7</button>
+                  <button type="button" class="num-key" data-digit="8">8</button>
+                  <button type="button" class="num-key" data-digit="9">9</button>
+                </div>
+              </div>
+
+              <!-- Live Raster Sensor Telemetry HUD (Eliminates dead space - Photo 2) -->
+              <div class="digit-raster-hud">
+                <div class="raster-hud-item">
+                  <span class="raster-hud-label">SENSOR MATRIX</span>
+                  <span class="raster-hud-val text-cyan">14 × 14 (196 px)</span>
+                </div>
+                <div class="raster-hud-item">
+                  <span class="raster-hud-label">ACTIVE PIXELS</span>
+                  <span class="raster-hud-val text-green" id="digit-active-px">0 / 196 (0%)</span>
+                </div>
+                <div class="raster-hud-item">
+                  <span class="raster-hud-label">CENTER OF MASS</span>
+                  <span class="raster-hud-val text-violet" id="digit-centroid">0.0, 0.0</span>
+                </div>
+                <div class="raster-hud-item">
+                  <span class="raster-hud-label">INFERENCE TENSOR</span>
+                  <span class="raster-hud-val text-amber">Float32 [196]</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-deep">
+              <div class="row-between" style="flex-wrap:wrap">
+                <h2 class="card-title" data-i18n="netDiagram">Network diagram</h2>
+                <span class="status-pill" id="digit-status"><span class="dot"></span><span id="digit-status-text"></span></span>
+              </div>
+              <p class="demo-body" data-i18n="digitSub2"></p>
+              <div class="progress" id="digit-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>
+              <p class="hint" style="margin-top:0.5rem" id="digit-info"></p>
+              <div class="canvas-frame"><canvas id="digit-net" width="720" height="300" role="img" data-i18n-aria="netDiagram"></canvas></div>
+              <div class="readout">
+                <div class="preview-row">
+                  <figure><canvas id="digit-preview" width="14" height="14" role="img" data-i18n-aria="netInput"></canvas></figure>
+                  <div>
+                    <p class="stat-label" data-i18n="prediction">Prediction</p>
+                    <p class="big-digit" id="digit-pred" aria-live="polite">–</p>
+                    <p class="hint" id="digit-hint"></p>
+                  </div>
+                </div>
+                <ul class="prob-list" id="digit-probs"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Gates -->
+        <div class="demo-panel" id="panel-gates" role="tabpanel" aria-labelledby="tab-gates" tabindex="-1" hidden>
+          <div class="demo-grid">
+            <div class="card-deep">
+              <h2 class="card-title" data-i18n="gatesTitle">Can one neuron learn it?</h2>
+              <p class="demo-body" data-i18n="gatesBody"></p>
+              <span class="field-label" data-i18n="gate">Logic gate</span>
+              <div class="radio-row" role="radiogroup" id="gate-pick" data-i18n-aria="gate"></div>
+              <span class="field-label" data-i18n="model">Model</span>
+              <div class="radio-row" role="radiogroup" id="gate-model" data-i18n-aria="model"></div>
+              <div class="tools">
+                <button type="button" class="pill-primary" id="gate-train" data-i18n="train">Train</button>
+                <button type="button" class="pill-outline" id="gate-reset" data-i18n="reset">Reset</button>
+              </div>
+              <p class="verdict" id="gate-verdict" role="status" aria-live="polite"></p>
+
+              <!-- Live Truth Table & Separability Math Matrix (Eliminates dead space - Photo 3) -->
+              <div class="gate-truth-matrix">
+                <div class="matrix-head-row" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+                  <span class="stat-label" style="color:#ffffff;">TRUTH TABLE & DECISION MATRIX</span>
+                  <span class="tech-badge" id="gate-sep-badge" style="font-size:0.65rem; padding:0.15rem 0.5rem;">LINEARLY SEPARABLE</span>
+                </div>
+                <table class="truth-table" id="gate-truth-table">
+                  <thead>
+                    <tr>
+                      <th>x₁</th>
+                      <th>x₂</th>
+                      <th>Target y</th>
+                      <th>Model Output ŷ</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="gate-truth-body">
+                    <!-- Populated dynamically by demos.js -->
+                  </tbody>
+                </table>
+                <div class="hyperplane-math-card" style="margin-top:0.75rem;">
+                  <div class="row-between">
+                    <span class="stat-label" style="font-size:0.7rem;">HYPERPLANE:</span>
+                    <span class="font-mono text-cyan" id="gate-equation" style="font-size:0.75rem;">w₁·x₁ + w₂·x₂ + b = 0</span>
+                  </div>
+                  <p class="hint" id="gate-theorem-note" style="margin-top:0.25rem; font-size:0.7rem;">
+                    Single neuron draws a single linear decision boundary.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="card-deep">
+              <div class="row-between"><h2 class="card-title" id="gate-score-title"></h2><span class="status-pill" id="gate-score"></span></div>
+              <div class="canvas-frame sq"><canvas id="gate-canvas" width="420" height="420" role="img" data-i18n-aria="gateCanvas"></canvas></div>
+              <ul class="result-list" id="gate-results"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Boundary -->
+        <div class="demo-panel" id="panel-boundary" role="tabpanel" aria-labelledby="tab-boundary" tabindex="-1" hidden>
+          <div class="demo-grid">
+            <div class="card-deep">
+              <h2 class="card-title" data-i18n="boundaryTitle">Decision boundary playground</h2>
+              <p class="demo-body" data-i18n="boundaryBody"></p>
+              <span class="field-label" data-i18n="team">Point color</span>
+              <div class="radio-row" role="radiogroup" id="team-pick" data-i18n-aria="team"></div>
+              <div class="tools">
+                <button type="button" class="pill-primary" id="bd-train" data-i18n="train">Train</button>
+                <button type="button" class="pill-outline" id="bd-clear" data-i18n="clear">Clear</button>
+                <button type="button" class="pill-outline" id="bd-reset" data-i18n="reset">Reset</button>
+              </div>
+              <p class="hint" style="margin-top:1rem" id="bd-count" role="status" aria-live="polite"></p>
+              <p class="hint" style="margin-top:0.5rem" data-i18n="boundaryCanvas"></p>
+            </div>
+            <div class="card-deep">
+              <div class="canvas-frame sq" style="margin-top:0">
+                <canvas id="bd-canvas" width="520" height="520" tabindex="0" role="application" data-i18n-aria="boundaryCanvas" style="cursor:crosshair"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/nn.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/intro.js"></script>
+  <script src="js/demos.js"></script>
+</body>
+</html>

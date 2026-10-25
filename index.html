@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-title-en="NeuroVision — Neural Networks | Real-Time Lab & JS Engine" data-title-th="NeuroVision — โครงข่ายประสาทเทียมและห้องทดลอง">NeuroVision — Neural Networks | Real-Time Lab & JS Engine</title>
+  <meta name="description" content="Explore synaptic neural networks, forward tensor activations, and client-side JavaScript execution in real-time.">
+  <meta property="og:title" content="NeuroVision — Neural Networks">
+  <meta property="og:description" content="Interactive visualizer: Synaptic Weights, Reactive Web Frontend, and V8 JS Compilation Engine in real-time.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+</head>
+<body data-page="lab">
+  <div id="bg-host"></div>
+  <a href="#main" class="skip-link" data-i18n="skip">Skip to content</a>
+  <header id="topbar"></header>
+
+  <main id="main">
+    <div class="nv-page-in">
+      <!-- Hero Section: Spacious & Clean Layout (Zero Dead Space, No Congestion) -->
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-art" id="hero-art"></div>
+        <div class="hero-fade" aria-hidden="true"></div>
+        <div class="container hero-inner">
+          <div class="hero-copy">
+            <div class="hero-eyebrow">
+              <span class="eyebrow-line" aria-hidden="true"></span>
+              <span class="eyebrow-text">Live in your browser · Zero cloud</span>
+            </div>
+            <h1 id="hero-title" class="display-1 hero-glimmer" data-i18n="heroTitle">
+              Neural Networks
+            </h1>
+            
+            <p class="hero-subtitle" data-i18n="heroBody">
+              Explore synaptic weights, forward tensor propagation, and client-side JavaScript execution in real-time.
+            </p>
+
+            <div class="hero-actions">
+              <a href="#lab" class="pill-primary" data-i18n="enterLab">Enter Network Lab</a>
+              <a href="demos.html" class="pill-outline" data-i18n="tryDemos">Try Demos & Experiments</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 1: Interactive Network Lab -->
+      <section id="lab" class="container lab" aria-labelledby="lab-title">
+        <div class="section-header">
+          <div>
+            <div class="tech-badge">
+              <span class="pulse-dot"></span>
+              <span>SYNAPTIC PLAYGROUND</span>
+            </div>
+            <h2 id="lab-title" class="h2" data-i18n="labTitle" style="margin-top:0.4rem;">Inside a tiny network</h2>
+            <p class="lead" data-i18n="labIntro">Two inputs, two hidden layers, one answer. Pick a neuron, move its weights and see the whole network react.</p>
+          </div>
+          <div class="tech-badge" style="background:rgba(168,85,247,0.12); border-color:rgba(168,85,247,0.3); color:#c084fc;">
+            <span>TOTAL PARAMETERS: 31 (23W + 8B)</span>
+          </div>
+        </div>
+
+        <div class="lab-grid">
+          <!-- Neuron Controls (Left Aside Panel) -->
+          <aside class="card panel" id="panel" aria-labelledby="panel-title"></aside>
+
+          <!-- Live Network Workspace (Wide Right) -->
+          <div class="card-deep workspace">
+            <div class="ws-head">
+              <div>
+                <h3 class="card-title" data-i18n="liveNet">Live Synaptic Network Graph</h3>
+                <p class="hint" data-i18n="diagramHint" style="margin-top:0.25rem;">Click any neuron to inspect incoming weights, or focus one and navigate with arrow keys.</p>
+              </div>
+              <ul class="legend">
+                <li><span class="l-pos" aria-hidden="true"></span> + <span data-i18n="positive">Positive Weight</span></li>
+                <li><span class="l-neg" aria-hidden="true"></span> − <span data-i18n="negative">Negative Weight</span></li>
+                <li data-i18n="thicker">Line Gauge = Signal Amplitude</li>
+              </ul>
+            </div>
+
+            <!-- Metric & Training Control Bar -->
+            <div class="ws-bar">
+              <div class="metric">
+                <span class="stat-label" data-i18n="loss">Training Loss</span>
+                <strong class="metric-val text-amber" id="stat-loss">0.68</strong>
+                <span class="metric-cap" id="cap-loss">Measured on training data</span>
+              </div>
+              <div class="metric">
+                <span class="stat-label" data-i18n="accuracy">Accuracy</span>
+                <strong class="metric-val text-green" id="stat-acc">50%</strong>
+                <span class="metric-cap" id="cap-acc">Binary classification rate</span>
+              </div>
+              <div class="metric lr">
+                <div class="row-between">
+                  <span class="stat-label" data-i18n="lr">Learning Rate (η)</span>
+                  <span class="lr-value font-mono text-cyan" id="lr-value">0.10</span>
+                </div>
+                <div id="lr-slider" style="margin-top:0.25rem;"></div>
+              </div>
+              <div class="ws-actions">
+                <button type="button" class="pill-primary" id="btn-train" data-i18n="simulate">Simulate Training</button>
+                <button type="button" class="pill-outline" id="btn-reset" data-i18n="reset">Reset Network</button>
+              </div>
+            </div>
+
+            <!-- Network Canvas SVG -->
+            <div class="ws-canvas">
+              <svg id="diagram" class="diagram-svg" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet" role="group"></svg>
+            </div>
+
+            <!-- Live Layer-by-Layer Activation Spectrum Strip (Photo 5 Fix) -->
+            <div class="ws-live-spectrum" id="ws-live-spectrum">
+              <div class="spectrum-col">
+                <span class="spectrum-title">L0 INPUTS</span>
+                <div class="spectrum-values" id="spec-l0">
+                  <span class="spec-pill text-cyan">x₁: 0.30</span>
+                  <span class="spec-pill text-cyan">x₂: 0.70</span>
+                </div>
+              </div>
+              <div class="spectrum-col">
+                <span class="spectrum-title">L1 HIDDEN (4)</span>
+                <div class="spectrum-values" id="spec-l1">
+                  <span class="spec-pill text-violet">0.31</span>
+                  <span class="spec-pill text-violet">0.30</span>
+                  <span class="spec-pill text-violet">0.52</span>
+                  <span class="spec-pill text-violet">0.30</span>
+                </div>
+              </div>
+              <div class="spectrum-col">
+                <span class="spectrum-title">L2 HIDDEN (3)</span>
+                <div class="spectrum-values" id="spec-l2">
+                  <span class="spec-pill text-violet">0.69</span>
+                  <span class="spec-pill text-violet">0.45</span>
+                  <span class="spec-pill text-violet">0.53</span>
+                </div>
+              </div>
+              <div class="spectrum-col">
+                <span class="spectrum-title">L3 OUTPUT</span>
+                <div class="spectrum-values" id="spec-l3">
+                  <span class="spec-pill text-green" id="spec-out">ŷ: 0.61</span>
+                </div>
+              </div>
+              <div class="spectrum-col" style="border-left: 1px solid rgba(255,255,255,0.08); padding-left: 0.75rem;">
+                <span class="spectrum-title">TENSORS</span>
+                <div class="spectrum-values">
+                  <span class="spec-pill text-amber">31 Weights</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Forward-Pass Inspector: fills the workspace so there is no dead space -->
+            <div class="ws-inspector" id="ws-inspector" aria-live="polite"></div>
+          </div>
+        </div>
+        <div role="status" aria-live="polite" class="sr-only" id="announce"></div>
+      </section>
+
+      <!-- Section 2: Real-Time Analytics & JS Engine Telemetry -->
+      <section id="analytics" class="container analytics-section" aria-labelledby="analytics-title">
+        <div class="section-header">
+          <div>
+            <div class="tech-badge">
+              <span class="pulse-dot"></span>
+              <span>LIVE TELEMETRY & JIT PROFILING</span>
+            </div>
+            <h2 id="analytics-title" class="h2" style="margin-top:0.4rem;">
+              Synaptic Convergence & JS Engine Execution Metrics
+            </h2>
+            <p class="lead">
+              Zero dead space. Monitor mathematical loss descent, inspect the synaptic weight tensor heatmap, and observe browser JIT execution benchmarks in real-time.
+            </p>
+          </div>
+          <div class="tech-badge" style="background:rgba(52,211,153,0.12); border-color:rgba(52,211,153,0.3); color:#34d399;">
+            <span>JIT OPTIMIZED: TURBOFAN (TIER 2)</span>
+          </div>
+        </div>
+
+        <div class="analytics-grid-4">
+          <!-- Card 1: Real-Time Convergence Chart -->
+          <div class="card-deep analytics-card">
+            <div class="analytics-card-head">
+              <div>
+                <h3 class="card-title">Training Convergence History</h3>
+                <p class="hint">Dual-axis tracking: Loss (Amber descent) vs Accuracy (Emerald ascent)</p>
+              </div>
+              <span class="tech-badge" style="padding:0.2rem 0.5rem; font-size:0.7rem;">EPOCH STREAM</span>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="analytics-chart" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-summary-row">
+              <span>Min Loss: <strong class="text-amber" id="chart-min-loss">0.68</strong></span>
+              <span>Peak Acc: <strong class="text-green" id="chart-peak-acc">50%</strong></span>
+              <span>Epochs: <strong class="text-cyan" id="chart-total-epochs">0</strong></span>
+            </div>
+            <div class="legend" style="justify-content:space-between; margin-top:0.15rem;">
+              <div style="display:flex; gap:1.25rem;">
+                <span style="color:#f59e0b;">● Loss (0.00 ➔ 1.00)</span>
+                <span style="color:#10b981;">● Accuracy (0% ➔ 100%)</span>
+              </div>
+              <span class="hint">Updates 60 FPS</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Synaptic Weight Heatmap Matrix -->
+          <div class="card-deep analytics-card">
+            <div class="analytics-card-head">
+              <div>
+                <h3 class="card-title">Synaptic Weight Heatmap Matrix</h3>
+                <p class="hint">2D tensor weights: Cyan = Excitatory (+) · Coral = Inhibitory (−)</p>
+              </div>
+              <div style="display:flex; gap:0.5rem;">
+                <span class="tech-badge" style="padding:0.2rem 0.5rem; font-size:0.7rem;">
+                  Sparsity: <strong id="matrix-sparsity" style="margin-left:0.2rem;">0%</strong>
+                </span>
+                <span class="tech-badge" style="padding:0.2rem 0.5rem; font-size:0.7rem;">
+                  RMS: <strong id="matrix-rms" style="margin-left:0.2rem;">1.2</strong>
+                </span>
+              </div>
+            </div>
+            <div id="weight-matrix-grid">
+              <!-- Dynamically populated by js/analytics.js -->
+            </div>
+            <p class="hint" style="margin-top:auto;">Hover or tap any matrix cell to inspect full floating-point precision.</p>
+          </div>
+
+          <!-- Card 3: JS Execution Engine Telemetry -->
+          <div class="card-deep analytics-card">
+            <div class="analytics-card-head">
+              <div>
+                <h3 class="card-title">JavaScript Engine Runtime Profile</h3>
+                <p class="hint">Microsecond latency & memory footprint inside the browser process</p>
+              </div>
+              <span class="tech-badge" style="padding:0.2rem 0.5rem; font-size:0.7rem; color:#38bdf8; border-color:#38bdf8;">
+                CLIENT-SIDE
+              </span>
+            </div>
+            <div class="engine-hud-grid">
+              <div class="engine-hud-box">
+                <span class="hud-title">FORWARD PASS LATENCY</span>
+                <strong class="hud-stat text-cyan" id="eng-fwd-latency">0.042 ms</strong>
+                <span class="hint">Matrix vector dot product</span>
+              </div>
+              <div class="engine-hud-box">
+                <span class="hud-title">BACKPROP LATENCY</span>
+                <strong class="hud-stat text-violet" id="eng-back-latency">0.118 ms</strong>
+                <span class="hint">Chain rule gradient descent</span>
+              </div>
+              <div class="engine-hud-box">
+                <span class="hud-title">SYNAPSE THROUGHPUT</span>
+                <strong class="hud-stat text-green" id="eng-throughput">480k syn/s</strong>
+                <span class="hint">Active synapses evaluated</span>
+              </div>
+              <div class="engine-hud-box">
+                <span class="hud-title">GRADIENT NORM ||∇W||</span>
+                <strong class="hud-stat text-amber" id="eng-gradient-norm">0.054</strong>
+                <span class="hint">Gradient vector magnitude</span>
+              </div>
+            </div>
+            <button type="button" class="pill-outline tight" id="btn-run-benchmark" style="width:100%; justify-content:center; margin-top:auto;">
+              <span>⚡ Run 1,000-Iteration JS JIT Benchmark</span>
+            </button>
+          </div>
+
+          <!-- Card 4: Interactive Decision Probe Sandbox -->
+          <div class="card-deep analytics-card">
+            <div class="analytics-card-head">
+              <div>
+                <h3 class="card-title">Live Inference Decision Sandbox</h3>
+                <p class="hint">Test coordinate probe: observe real-time classification probability</p>
+              </div>
+              <span class="tech-badge" style="padding:0.2rem 0.5rem; font-size:0.7rem; color:#10b981; border-color:#10b981;">
+                ACTIVE PROBE
+              </span>
+            </div>
+            <div class="inference-sandbox">
+              <div class="probe-sliders">
+                <div>
+                  <div class="row-between">
+                    <span class="stat-label">Input x₁:</span>
+                    <strong class="font-mono text-cyan" id="probe-x1-val">0.50</strong>
+                  </div>
+                  <input type="range" id="probe-x1" class="nv-range" min="0" max="1" step="0.01" value="0.50">
+                </div>
+                <div>
+                  <div class="row-between">
+                    <span class="stat-label">Input x₂:</span>
+                    <strong class="font-mono text-cyan" id="probe-x2-val">0.50</strong>
+                  </div>
+                  <input type="range" id="probe-x2" class="nv-range" min="0" max="1" step="0.01" value="0.50">
+                </div>
+              </div>
+              <div class="preset-row">
+                <span class="hint" style="margin-right:0.25rem;">Presets:</span>
+                <button type="button" class="preset-pill" data-x1="0.5" data-x2="0.5">Center (0.5, 0.5)</button>
+                <button type="button" class="preset-pill" data-x1="0.1" data-x2="0.9">Corner (0.1, 0.9)</button>
+                <button type="button" class="preset-pill" data-x1="0.9" data-x2="0.1">Edge (0.9, 0.1)</button>
+                <button type="button" class="preset-pill" data-x1="0.05" data-x2="0.05">Origin (0.05, 0.05)</button>
+              </div>
+              <div class="probe-readout">
+                <div class="row-between">
+                  <span class="stat-label">Classification Probability (ŷ):</span>
+                  <strong class="font-mono text-green" id="probe-prob-val">50% (0.500)</strong>
+                </div>
+                <div class="probe-bar-track">
+                  <div class="probe-bar-fill" id="probe-prob-bar"></div>
+                </div>
+                <div class="row-between" style="margin-top:0.35rem;">
+                  <span class="hint">Decision Boundary Threshold: 0.50</span>
+                  <span class="probe-verdict positive" id="probe-verdict">CLASS 1 (POSITIVE)</span>
+                </div>
+              </div>
+            </div>
+            <p class="hint" style="margin-top:auto;">Drag the input sliders above to test the neural network against any continuous 2D coordinate.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: The Three Pillars Architecture Visual Guide -->
+      <section class="container" style="padding: 4rem 0 5rem; border-top: 1px solid var(--glass-border);">
+        <div class="section-header">
+          <div>
+            <div class="tech-badge">
+              <span class="pulse-dot"></span>
+              <span>SYSTEM ARCHITECTURE</span>
+            </div>
+            <h2 class="h2" style="margin-top:0.4rem;">How The Three Core Pillars Connect</h2>
+            <p class="lead">Artificial intelligence running entirely inside client browser memory is powered by three intertwined engines.</p>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem; margin-top:1.5rem;">
+          <div class="card-deep">
+            <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
+              <span style="font-size:1.75rem;">🧠</span>
+              <div>
+                <h3 class="card-title">01 · The Neural Network Core</h3>
+                <span class="hint">Mathematical Brain Model</span>
+              </div>
+            </div>
+            <p class="demo-body">
+              Inspired by biological axons and dendrites, multi-layer artificial neurons calculate weighted sums, apply non-linear activations (Sigmoid, Tanh, ReLU), and update parameters via backpropagation.
+            </p>
+          </div>
+
+          <div class="card-deep">
+            <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
+              <span style="font-size:1.75rem;">🌐</span>
+              <div>
+                <h3 class="card-title">02 · The Interactive Website</h3>
+                <span class="hint">Visual Sensory & Control Plane</span>
+              </div>
+            </div>
+            <p class="demo-body">
+              The web interface coordinates user interaction, pointer gestures, SVG signal pulse animations, and 60 FPS canvas refreshes—serving as the direct sensory and display layer for neural computations.
+            </p>
+          </div>
+
+          <div class="card-deep">
+            <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
+              <span style="font-size:1.75rem;">⚡</span>
+              <div>
+                <h3 class="card-title">03 · The JavaScript Engine</h3>
+                <span class="hint">Native JIT Compilation Pipeline</span>
+              </div>
+            </div>
+            <p class="demo-body">
+              The browser's JavaScript engine (Google V8, SpiderMonkey) converts pure JavaScript tensor operations into high-speed machine code using JIT compilation and Typed Arrays, achieving sub-millisecond local execution.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Core JavaScript Modules -->
+  <script src="js/nn.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/intro.js"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/lab.js"></script>
+</body>
+</html>
